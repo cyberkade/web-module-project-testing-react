@@ -1,15 +1,83 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import Display from '../Display'
+import { waitFor } from '@testing-library/dom';
+import mockFetchShow from '../../api/fetchShow';
+jest.mock('../../api/fetchShow')
 
+// import { displayFun } from '../Display'
 
+const testShow = {
+    name: 'Bungo',
+    summary: 'Bungos Jumbo',
+    seasons: [
+        {
+            id: 0,
+            name:'Season 1',
+            episodes: []
+        },
+        {
+            id: 1,
+            name:'Season 2',
+            episodes: []
+        },
+        {
+            id: 2,
+            name:'Season 3',
+            episodes: []
+        }
+    ]
+  }
 
+test('renders without errors', () => {
+    render(<Display/>)
+})
 
+test('clicking the button fetches shows and displays a component containing shows data', async () => {
+    mockFetchShow.mockResolvedValueOnce(testShow)
 
+    render(<Display/>)
 
+    const button = screen.getByRole("button");
 
+    userEvent.click(button);
 
+    const shows = await screen.findByTestId("show-container");
 
+    expect(shows).toBeInTheDocument();
+})
 
+test('the amount of selected options rendered is equal to the amount of seasons in data', async () => {
+    mockFetchShow.mockResolvedValueOnce(testShow)
 
+   render(<Display/>)
 
+    const button = screen.getByRole("button");
+
+    userEvent.click(button);
+
+    const options = await screen.findAllByTestId("season-option");
+
+    expect(options).toHaveLength(testShow.seasons.length);
+})
+
+test('the amount of selected options rendered is equal to the amount of seasons in data', async () => {
+    mockFetchShow.mockResolvedValueOnce(testShow)
+    
+    const mockDisplayFunc = jest.fn();
+
+    render(<Display displayFunc={mockDisplayFunc}/>)
+
+    const button = screen.getByRole("button");
+
+    userEvent.click(button);
+
+    await waitFor(()=>{
+        expect(mockDisplayFunc).toHaveBeenCalled()
+        expect(mockDisplayFunc).toBeCalledTimes(1);
+    })
+})
 
 
 
